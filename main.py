@@ -15,6 +15,7 @@ ModelCatalog().tool_test_run("slim-sql-tool")
 ###########################################################
 ###########################################################
 
+
 def upload_csv_to_sqlite(csv_file_path, db_file_path):
     
     df = pd.read_csv(csv_file_path)
@@ -30,7 +31,7 @@ def upload_csv_to_sqlite(csv_file_path, db_file_path):
     
     schema_string = ",".join(f'"{column[1]}"' for column in schema)
     
-    db_schema = f"{table_name} ({schema_string})"
+    db_schema = f"CREATE TABLE {table_name} ({schema_string})"
     
     conn.close()
     
@@ -84,4 +85,4 @@ if __name__ == "__main__":
         answer = query_db(query_sql, db_file_path)
         
         print(answer)
-        
+    
