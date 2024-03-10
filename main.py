@@ -1,6 +1,7 @@
 from llmware.agents import LLMfx
 import pandas as pd
 import sqlite3
+from sqlite3 import Error
 
 def upload_csv_to_sqlite(csv_file_path, db_file_path):
     
@@ -17,58 +18,58 @@ def upload_csv_to_sqlite(csv_file_path, db_file_path):
     
     schema_string = ""
     for column in schema:
-        schema_string += f"{column[1]}, "
+        schema_string += f'"{column[1]}",'
     
     db_schema = f"CREATE TABLE {table_name} ({schema_string})"
+    
+    #print("DB SCHEMA:\n\n")
+    #print(db_schema)
     
     conn.close()
     
     return db_schema
 
 def text2sql(query, db_schema):
-
-    #sample_table_schema = "CREATE TABLE customer_info (customer_name text, account_number integer, annual_spend integer)"
-
-    #query = "What are the names of all customers with annual spend greater than $1000?"
-    
-    full_schema = db_schema
     
     print(db_schema)
     
-    conn = sqlite3.connect(db_file_path)
-    
-    cursor = conn.cursor()
-    
     agent = LLMfx(verbose=False)
-    response_json = agent.sql(query, full_schema)
+    response_json = agent.sql(query, db_schema)
     
     response = response_json["llm_response"]
     
     print(response)
 
-    cursor.execute(response)
-    
-    rows = cursor.fetchall()
-    answer_final = ""
-    
-    print("Actual Answer:")
-    for row in rows:
-        print(row)
-        answer_final += f'{row}\n'
-    
-    conn.close()
+    return response
 
-    return answer_final
+def query_db(query, db_file):
 
+    conn = None
+    try:
+        conn = sqlite3.connect(db_file)
+        cur = conn.cursor()
+        cur.execute(query)
+        rows = cur.fetchall()
+    except Error as e:
+        print(e)
+        rows = None
+    finally:
+        if conn:
+            conn.close()
+    return rows
 
 if __name__ == "__main__":
 
     csv_file_path = './StockRatings.csv' 
     db_file_path = './StockRatings.db'
-    schema_string = upload_csv_to_sqlite(csv_file_path, db_file_path)
+    db_schema = upload_csv_to_sqlite(csv_file_path, db_file_path)
 
     while True:
         
-        query = input("Your query: ")
+        query_txt = input("Your query: ")
     
-        text2sql(query, schema_string)
+        query_sql = text2sql(query_txt, db_schema)
+        
+        answer = query_db(query_sql,db_file_path)
+        
+        print(answer)
