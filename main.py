@@ -28,14 +28,9 @@ def upload_csv_to_sqlite(csv_file_path, db_file_path):
     cursor.execute(f"PRAGMA table_info({table_name})")
     schema = cursor.fetchall()
     
-    schema_string = ""
-    for column in schema:
-        schema_string += f'"{column[1]}",'
+    schema_string = ",".join(f'"{column[1]}"' for column in schema)
     
-    db_schema = f"CREATE TABLE {table_name} ({schema_string})"
-    
-    #print("DB SCHEMA:\n\n")
-    #print(db_schema)
+    db_schema = f"{table_name} ({schema_string})"
     
     conn.close()
     
@@ -57,6 +52,7 @@ def text2sql(query, db_schema):
 def query_db(query, db_file):
 
     conn = None
+    
     try:
         conn = sqlite3.connect(db_file)
         cur = conn.cursor()
@@ -68,12 +64,15 @@ def query_db(query, db_file):
     finally:
         if conn:
             conn.close()
+    
+    print(rows)
+    
     return rows
 
 if __name__ == "__main__":
 
     csv_file_path = './StockRatings.csv' 
-    db_file_path = csv_file_path.replace(".csv", ".db")
+    db_file_path = './StockRatings.db'
     db_schema = upload_csv_to_sqlite(csv_file_path, db_file_path)
 
     while True:
@@ -82,7 +81,7 @@ if __name__ == "__main__":
     
         query_sql = text2sql(query_txt, db_schema)
         
-        answer = query_db(query_sql,db_file_path)
+        answer = query_db(query_sql, db_file_path)
         
-        print("Answer:")
         print(answer)
+        
