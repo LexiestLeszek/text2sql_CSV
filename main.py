@@ -73,7 +73,7 @@ def query_db(query, db_file):
 if __name__ == "__main__":
 
     csv_file_path = './StockRatings.csv' 
-    db_file_path = './StockRatings.db'
+    db_file_path = csv_file_path.replace(".csv", ".db")
     db_schema = upload_csv_to_sqlite(csv_file_path, db_file_path)
 
     while True:
@@ -84,4 +84,5 @@ if __name__ == "__main__":
         
         answer = query_db(query_sql,db_file_path)
         
+        print("Answer:")
         print(answer)
