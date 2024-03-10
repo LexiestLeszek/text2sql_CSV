@@ -38,6 +38,7 @@ pip install pandas sqlite3 llmware
     answer = query_db(query_sql, './StockRatings.db')
     print(answer)
     ```
+Note: First run will download LLMWare models and it will take some time.
 
 ## Contributing
 
