@@ -3,6 +3,18 @@ import pandas as pd
 import sqlite3
 from sqlite3 import Error
 
+###########################################################
+# RUN THIS THING ONCE TO DOWNLOAD LOACL LLMs FROM LLM_WARE:
+
+from llmware.models import ModelCatalog
+
+ModelCatalog().get_llm_toolkit(["sql"])
+
+ModelCatalog().tool_test_run("slim-sql-tool")
+
+###########################################################
+###########################################################
+
 def upload_csv_to_sqlite(csv_file_path, db_file_path):
     
     df = pd.read_csv(csv_file_path)
