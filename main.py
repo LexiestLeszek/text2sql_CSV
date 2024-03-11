@@ -1,10 +1,10 @@
-from llmware.agents import LLMfx
 import pandas as pd
 import sqlite3
 from sqlite3 import Error
+from llmware.agents import LLMfx
 
 ###########################################################
-# RUN THIS THING ONCE TO DOWNLOAD LOACL LLMs FROM LLM_WARE:
+# RUN THIS THING ONCE TO DOWNLOAD LOCAL LLMs FROM LLM_WARE:
 
 from llmware.models import ModelCatalog
 
@@ -15,12 +15,11 @@ ModelCatalog().tool_test_run("slim-sql-tool")
 ###########################################################
 ###########################################################
 
-
-def upload_csv_to_sqlite(csv_file_path, db_file_path):
+def main(csv_file_path):
     
     df = pd.read_csv(csv_file_path)
     
-    conn = sqlite3.connect(db_file_path)
+    conn = sqlite3.connect(":MEMORY:")
     
     table_name = csv_file_path.split('/')[-1].split('.')[0]
     df.to_sql(table_name, conn, if_exists='replace', index=False)
@@ -33,56 +32,43 @@ def upload_csv_to_sqlite(csv_file_path, db_file_path):
     
     db_schema = f"CREATE TABLE {table_name} ({schema_string})"
     
-    conn.close()
-    
-    return db_schema
-
-def text2sql(query, db_schema):
-    
     print(db_schema)
     
+    query = "Who has the best overall rating?"
+
     agent = LLMfx(verbose=False)
     response_json = agent.sql(query, db_schema)
     
     response = response_json["llm_response"]
     
     print(response)
+    
+    words1 = response.split()
+    words2 = db_schema.split()
+    
+    for i in range(len(words1)):
 
-    return response
-
-def query_db(query, db_file):
-
-    conn = None
+        if words1[i] in words2 and not (words1[i].startswith('"') and words1[i].endswith('"')):
+    
+            words1[i] = f'"{words1[i]}"'
+    
+    modified_string = ' '.join(words1)
     
     try:
-        conn = sqlite3.connect(db_file)
-        cur = conn.cursor()
-        cur.execute(query)
-        rows = cur.fetchall()
+        cursor.execute(modified_string)
+        rows = cursor.fetchall()
+        print(rows)
+        return rows
     except Error as e:
         print(e)
         rows = None
     finally:
         if conn:
             conn.close()
-    
-    print(rows)
-    
-    return rows
 
 if __name__ == "__main__":
-
-    csv_file_path = './StockRatings.csv' 
-    db_file_path = './StockRatings.db'
-    db_schema = upload_csv_to_sqlite(csv_file_path, db_file_path)
-
-    while True:
-        
-        query_txt = input("Your query: ")
     
-        query_sql = text2sql(query_txt, db_schema)
-        
-        answer = query_db(query_sql, db_file_path)
-        
-        print(answer)
+    file_path = "./StockRatings.csv"
+    
+    main(file_path)
     
