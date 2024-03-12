@@ -13,7 +13,7 @@ def main():
                 
     column_names = df.columns.tolist()
     data_type = "" ## TODO: Add datatype identification logic
-    column_names_string = ', '.join([f'{name} {data_type}' for name in column_names])
+    column_names_string = ', '.join([f'{name}{data_type}' for name in column_names])
     table_name = csv_file_path.split('/')[-1].split('.')[0]
     schema_from_csv = f"CREATE TABLE {table_name} ({column_names_string})"
 
@@ -23,6 +23,10 @@ def main():
     response = response_json['llm_response']
 
     print(response)
+    
+    #result = df.query(response)
+    
+    #print(result)
 
     return response
 
